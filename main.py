@@ -1,9 +1,17 @@
 from flask import Flask, render_template
 from datetime import datetime
+from pm25 import get_pm25
 
 books = {1: "Python book", 2: "Java book", 3: "Flask book"}
 
 app = Flask(__name__)
+
+
+@app.route("/pm25")
+def pm25_table():
+    columns, values = get_pm25()
+    print(columns, values)
+    return render_template("pm25.html", columns=columns, values=values)
 
 
 @app.route("/sum/x=<a>&y=<b>")
@@ -62,4 +70,5 @@ def index():
     return render_template("index.html", time=now, name="peggy")
 
 
+print(get_pm25())
 app.run(debug=True)
