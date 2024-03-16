@@ -2,16 +2,51 @@
 // 圖表主繪製區域
 const chart1 = echarts.init(document.getElementById('main'));
 const chart2 = echarts.init(document.getElementById('six'));
+const chart3 = echarts.init(document.getElementById('county'));
+
 $("#update").click(() => {
     drawPM25();
 });
 
-
+// select 選擇option時的監聽
+$("#select_county").change(() => {
+    // val=>value(選擇的option value)
+    county = $("#select_county").val();
+    console.log(county);
+    drawCountyPM25(county);
+});
 
 // 先呼叫繪製全省
 drawPM25();
 // 再呼叫繪製六都
 drawSixPM25();
+// 繪製各縣市
+drawCountyPM25("彰化縣");
+
+
+function drawCountyPM25(county) {
+    chart3.showLoading();
+    $.ajax(
+        {
+            url: `/county-pm25-data/${county}`,
+            type: "GET",
+            dataType: "json",
+            success: (result) => {
+                // 繪製對應區並給了必要參數
+                drawchart(chart3, county, "PM2.5", result["site"], result["pm25"]);
+                chart3.hideLoading(close);
+            },
+            error: () => {
+                alert("讀取資料失敗，請稍後再試!")
+                chart3.hideLoading();
+            }
+        }
+    )
+}
+
+
+
+
 
 // 取得後端資料
 function drawPM25() {
