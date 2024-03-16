@@ -1,10 +1,73 @@
 from flask import Flask, render_template
 from datetime import datetime
-from pm25 import get_pm25
+from pm25 import get_pm25, get_six_pm25, six_countys, get_countys, get_county_pm25
+import json
+
 
 books = {1: "Python book", 2: "Java book", 3: "Flask book"}
 
 app = Flask(__name__)
+
+
+@app.route("/county-pm25-data/<county>", methods=["GET"])
+def county_pm25_data(county):
+    columns, values = get_county_pm25(county)
+    site = [value[0] for value in values]
+    pm25 = [value[2] for value in values]
+    result = json.dumps(
+        {
+            "site": site,
+            "pm25": pm25,
+        },
+        ensure_ascii=False,
+    )
+
+    return result
+
+
+@app.route("/pm25-charts")
+def pm25_charts():
+    countys = get_countys()
+    return render_template("pm25-charts-bulma.html", countys=countys)
+
+
+@app.route("/six-pm25-data")
+def six_pm25_data():
+    pm25 = get_six_pm25()
+    result = json.dumps(
+        {
+            "site": six_countys,
+            "pm25": pm25,
+        },
+        ensure_ascii=False,
+    )
+    return result
+
+
+@app.route("/pm25-data", methods=["GET"])
+def pm25_data():
+    columns, values = get_pm25()
+    site = [value[0] for value in values]
+    pm25 = [value[2] for value in values]
+    time = values[0][-2]
+    # 取得最高跟最低的數據
+    sorted_data = sorted(values, key=lambda x: x[2])
+    print(sorted_data)
+    lowest = {"site": sorted_data[0][0], "pm25": sorted_data[0][2]}
+    highest = {"site": sorted_data[-1][0], "pm25": sorted_data[-1][2]}
+
+    result = json.dumps(
+        {
+            "time": time,
+            "site": site,
+            "pm25": pm25,
+            "lowest": lowest,
+            "highest": highest,
+        },
+        ensure_ascii=False,
+    )
+
+    return result
 
 
 @app.route("/pm25")
@@ -70,5 +133,6 @@ def index():
     return render_template("index.html", time=now, name="peggy")
 
 
-print(get_pm25())
+# print(get_pm25())
+# print(pm25_data())
 app.run(debug=True)
