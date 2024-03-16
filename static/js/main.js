@@ -16,6 +16,13 @@ $("#select_county").change(() => {
     drawCountyPM25(county);
 });
 
+// 設定隨著視窗大小縮放圖表大小
+window.onresize = function () {
+    chart1.resize();
+    chart2.resize();
+    chart3.resize();
+};
+
 // 先呼叫繪製全省
 drawPM25();
 // 再呼叫繪製六都
@@ -23,7 +30,7 @@ drawSixPM25();
 // 繪製各縣市
 drawCountyPM25("彰化縣");
 
-
+// 各縣市的函式
 function drawCountyPM25(county) {
     chart3.showLoading();
     $.ajax(
@@ -33,8 +40,10 @@ function drawCountyPM25(county) {
             dataType: "json",
             success: (result) => {
                 // 繪製對應區並給了必要參數
-                drawchart(chart3, county, "PM2.5", result["site"], result["pm25"]);
-                chart3.hideLoading(close);
+                this.setTimeout(() => {
+                    drawchart(chart3, county, "PM2.5", result["site"], result["pm25"], "#98fb98");
+                    chart3.hideLoading(close);
+                }, 1000);
             },
             error: () => {
                 alert("讀取資料失敗，請稍後再試!")
@@ -46,9 +55,8 @@ function drawCountyPM25(county) {
 
 
 
-
-
 // 取得後端資料
+// 全省的函式
 function drawPM25() {
     chart1.showLoading();
     $.ajax(
@@ -58,14 +66,15 @@ function drawPM25() {
             dataType: "json",
             success: (result) => {
                 // 繪製對應區並給了必要參數
-                // jQuery寫法
-                $("#pm25_high_site").text(result["highest"]["site"]);
-                $("#pm25_high_value").text(result["highest"]["pm25"]);
-                $("#pm25_low_site").text(result["lowest"]["site"]);
-                $("#pm25_low_value").text(result["lowest"]["pm25"]);
-                drawchart(chart1, result["time"], "PM2.5", result["site"], result["pm25"])
-                chart1.hideLoading(close);
                 this.setTimeout(() => {
+                    // jQuery寫法
+                    $("#pm25_high_site").text(result["highest"]["site"]);
+                    $("#pm25_high_value").text(result["highest"]["pm25"]);
+                    $("#pm25_low_site").text(result["lowest"]["site"]);
+                    $("#pm25_low_value").text(result["lowest"]["pm25"]);
+                    drawchart(chart1, result["time"], "PM2.5", result["site"], result["pm25"])
+                    chart1.hideLoading(close);
+
                 }, 1000);
             },
             error: () => {
@@ -86,8 +95,10 @@ function drawSixPM25() {
             dataType: "json",
             success: (result) => {
                 // 繪製對應區並給了必要參數
-                drawchart(chart2, "六都PM2.5平均值", "PM2.5", result["site"], result["pm25"])
-                chart2.hideLoading(close);
+                this.setTimeout(() => {
+                    drawchart(chart2, "六都PM2.5平均值", "PM2.5", result["site"], result["pm25"], "#87cefa")
+                    chart2.hideLoading(close);
+                }, 1000);
             },
             error: () => {
                 alert("讀取資料失敗，請稍後再試!")
@@ -97,8 +108,8 @@ function drawSixPM25() {
     )
 }
 
-
-function drawchart(chart, title, legend, xData, yData) {
+// 繪圖區
+function drawchart(chart, title, legend, xData, yData, color = "#db7093") {
     let option = {
         title: {
             text: title
@@ -115,7 +126,10 @@ function drawchart(chart, title, legend, xData, yData) {
             {
                 name: legend,
                 type: 'bar',
-                data: yData
+                data: yData,
+                itemStyle: {
+                    color: color
+                }
             }
         ]
     };
